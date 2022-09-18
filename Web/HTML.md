@@ -276,6 +276,8 @@ and HTML5 Apps. It also documents Mozilla products, like Firefox OS.">
 
 `<em>`元素表示强调某些词，从而改变整句话的意思（e.g. 反讽）。而`<strong>`仅仅强调某些词语。
 
+
+
 `<i> ` `<b> ` `<u>`元素以前是**表象元素（presentational elements）**，在CSS 仍然不被完全支持的时期使用，无任何语义。而HTML5中又重新定义了它们的语义。
 
 - [`i`](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/i) 被用来传达传统上用斜体表达的意义：外国文字，分类名称，技术术语，一种思想……
@@ -300,6 +302,8 @@ and HTML5 Apps. It also documents Mozilla products, like Firefox OS.">
 
 
 
+`<small>`这个元素被重新定义为表示边注释和附属细则，包括版权和法律文本。
+
 
 
 
@@ -319,6 +323,8 @@ and HTML5 Apps. It also documents Mozilla products, like Firefox OS.">
 
 
 `<br>`空元素可以进行换行，`<hr>` 元素在文档中生成一条水平分割线。
+
+
 
 
 
