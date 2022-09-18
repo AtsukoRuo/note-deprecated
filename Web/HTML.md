@@ -2,8 +2,6 @@
 
 [TOC]
 
-
-
 ## 基本概念
 
 **HTML (Hypertext Markup Language ，超文本标记语言)**是一种结构化Web以及其内容的语言。
@@ -268,7 +266,7 @@ and HTML5 Apps. It also documents Mozilla products, like Firefox OS.">
 - `I` 表示大写罗马数字编号
 - `1` 表示数字编号（默认）编号类型适用于整个列表
 
-最好使用CSS中的list-style-type属性代替type属性。**`start`**属性指定了列表编号的起始值，属性值为整数。
+**最好使用CSS中的list-style-type属性代替type属性**。**`start`**属性指定了列表编号的起始值，属性值为整数。
 
 上述我们讨论了基本的列表，现在我们介绍一下**描述列表（description list）**。例如术语和定义、问题和答案等都可以使用描述列表标记。整个列表用 `<dl>`标记，`<dt>`标记每一项，`<dd> `解释这一项。一个`<dt>`可以对应多个`<dd>`。
 
