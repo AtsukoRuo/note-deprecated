@@ -21,10 +21,10 @@ Git 保存的不是文件的变化或者差异，而是一系列不同时刻的 
 
 对象是Git中主要的资产，分为以下四种类型
 
-- Blob
-- Tree 
-- Commit
-- Tag
+- `Blob`
+- `Tree `
+- `Commit`
+- `Tag`
 
 对象具有Immutable特性。在构建对象时，将对象所引用的资源使用Zlib进行压缩，同时用资源的内容以及自己的头部信息作为SHA-1算法的输入，将该算法输出40个字符长度的SHA-1值作为该对象的引用，在不冲突情况下，可以用至少6个字符长度的SHA-1作为引用。然后Git把对象存储在Git Object Database中，一般按以下规则组织存储：对象的SHA-1的前2位作为目录名，而后38位作为文件名。
 
@@ -32,48 +32,57 @@ Git 保存的不是文件的变化或者差异，而是一系列不同时刻的 
 
 ### ./git
 
-./git按照以下方式组织：
+./git目录按照以下方式组织：
 
-- 
+
 
 ## 常用命令
 
 ### 创建仓库 
 
-- 使用命令`git init`将尚未进行版本控制的本地目录转换为Git仓库。若在创建仓库时，当前目录下有文件或者子目录，那么Git将这些标记为未跟踪的。创建一个本地仓库。
+- 使用命令`git init`将尚未进行版本控制的本地目录转换为**Git本地仓库**。若在创建仓库时，当前目录下有文件或者子目录，那么Git将这些标记为未跟踪的。
 
 - 使用命令`git clone <url> `，从其他服务器中下载一个Git仓库到由Git自动在当前目录创建的子目录中，名称是仓库名。可以通过额外的参数`git clone <url> name`指定新的目录名。其中url可以是https、SSH、git等协议。默认创建一个名为`origin`的远程仓库。
 
 远程仓库与本地仓库中的数据都放在`git object base`中。
 
-### 合并
 
-### 变基
 
-### 标签
+### 合并 & 变基
 
-### 分支 & 远程分支 &  跟踪分支
+
+
+### 分支 & 远程分支 &  跟踪分支 & 标签
 
 - 创建分支：
 
-	- `git branch <name>`在当前仓库上创建一个本地分支。
+  - `git branch <name>`在当前仓库上创建一个本地分支。
 
-	- `git checkout -b <name>`创建并切换，它是以下两条命令的缩写：
+  - `git checkout -b <name>`创建并切换，它是以下两条命令的缩写：
 
-		~~~shell
-		$git branch iss53
-		$git checkout iss53
-		~~~
+  	~~~shell
+  	$git branch iss53
+  	$git checkout iss53
+  	~~~
 
-	- `git branch -u <remote>/<branch>`在当前分支上创建一个跟踪分支指向`<remote>/<branch>`
+  - `git branch -u <remote>/<branch>`在当前分支上创建一个跟踪分支指向`<remote>/<branch>`
 
-	- `git checkout -b <name> <remote>/<branch>`创建一个跟踪分支并切换。
+  - `git checkout -b <name> <remote>/<branch>`创建一个跟踪分支并切换。
+
+  
 
 - 查看分支：`git branch`，查看当前仓库的本地分支。`-a`查看当前仓库的本地分支和远程分支。`-vv`查看当前仓库的跟踪分支
 
-- 删除分支：`git branch -d <name>`删除在当前仓库上本地分支。`git push <remote>:<remote_branch>`或者`git push <remote> --delete <branch>`删除远程分支并更新到服务器中。
 
-- 切换分支：`git switch <name>`在本地仓库的本地分支切换，`git checkout <name>`可以随意地进行切换。切换分支时，工作目录以及暂存区都替换为当时的版本快照，以及切换到相应的仓库中。
+
+- 删除分支：
+
+	- `git branch -d <name>`删除在当前仓库上本地分支。
+	- `git push <remote>:<remote_branch>`或者`git push <remote> --delete <branch>`删除远程分支并更新到服务器中。
+
+	
+
+- 切换分支：`git switch <name>`在本地仓库的本地分支切换，`git checkout <name>`可以随意地进行切换。**切换分支时，工作目录以及暂存区都替换为当时的版本快照，以及切换到相应的仓库中**。
 
 
 
@@ -82,6 +91,8 @@ Git 保存的不是文件的变化或者差异，而是一系列不同时刻的 
 远程分支必须通过`git fetch`命令进行更新。同时可以在远程仓库上创建本地分支，通过`git push`命令向远程仓库写入此本地分支。
 
 
+
+HEAD指向最近一次提交的版本，HEAD^ HEAD^^ ....   HEAD~100
 
 ### 工作目录、暂存区、仓库的相关命令
 
@@ -94,6 +105,7 @@ Git 保存的不是文件的变化或者差异，而是一系列不同时刻的 
 - `--amend`：重新提交一次。避免修补小错误时而使提交记录混乱
 - `-m`：必须要有的，说明提交信息
 - `-a`：将工作区中所有已跟踪文件提交，相当于跳过git add。
+- `--pretty=oneline`：精简输出
 
 
 
@@ -107,11 +119,20 @@ $ git add README
 
 
 
-`git add`命令将文件更新到暂存区。如果文件处于特殊状态（未跟踪、冲突），那么相应地Git将其标记为已跟踪的或者冲突已解决的。`git add .`将当前目录下的所有文件添加
+`git add `命令将文件更新到暂存区。如果文件处于特殊状态（未跟踪、冲突），那么相应地Git将其标记为已跟踪的或者冲突已解决的。
+
+~~~shell
+$ git add HelloWorld.c		//add单个文件
+$ git add 1.c 2.c			//add多个文件
+$ git add Note/				//add目录
+$ git add .					//add当前目录
+~~~
 
 
 
-`git status`
+
+
+`git status`，把当前工作目录与暂存区的内容跟HEAD所指的提交作比较。只会说明文件、目录是否删除、改动、添加等状态信息，而不会说明具体的内容改动。如果想要查看具体的内容改动，推荐使用`git diff`命令。
 
 
 
@@ -119,10 +140,26 @@ $ git add README
 
 
 
+
+
 `git  reset`
 
-
 ​	
+
+`git reflog`查看命名历史，可以用来查看各个提交后Commit的SHA。例如
+
+~~~shell
+0de69d9 (HEAD -> master) HEAD@{0}: reset: moving to HEAD^
+05ab3d8 HEAD@{1}: commit: append GPL
+0de69d9 (HEAD -> master) HEAD@{2}: commit: add distributed
+2092838 HEAD@{3}: commit (initial): wrote a readme file
+~~~
+
+
+
+
+
+
 
 ### pull & fetch & push & 远程仓库
 
@@ -130,7 +167,7 @@ $ git add README
 
 
 
-通过`git remote add <shortname> <url>`创建一个远程仓库，此时这个远程仓库中并没有任何数据。
+通过`git remote add <shortname> <url>`创建一个远程仓库。
 
 `git remote`查看所有远程仓库的名称，`-v` 同时列出对应的URL以及权限。
 

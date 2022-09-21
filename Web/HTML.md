@@ -350,22 +350,34 @@ HTML 的 **`<del>`** 标签表示一些被从文档中删除的文字内容。�
 
 - href：声明该超链接的Web地址。可以提供URL（统一资源定位器），或者文档片段(#id)
 
-	~~~html
-	//contacts.html
-	<h2 id="Mailing_address">邮寄地址</h2>
-	
-	//index.html
-	<p>要提供意见和建议，请将信件邮寄至<a href="contacts.html#Mailing_address">我们的地址</a></p>
-	~~~
+  ~~~html
+  //contacts.html
+  <h2 id="Mailing_address">邮寄地址</h2>
+  
+  //index.html
+  <p>要提供意见和建议，请将信件邮寄至<a href="contacts.html#Mailing_address">我们的地址</a></p>
+  ~~~
 
-	
+  
 
-	或者超链接到一个邮箱中，或者下载资源。
+  或者超链接到一个邮箱中，或者下载资源。
 
 - title：超链接声明额外的信息。当鼠标悬停在超链接上面时，这部分信息将以工具提示的形式显示。
+
 - target：
   - “_blank”，以新的标签页打开
+  
   - _self：当前页面加载，此值是默认的
+  
+  - 框架名：将资源加载到框架中
+  
+  	~~~html
+  	<a href="xxx.jpg" target="iframe"> </a>
+  	<iframe name="iframe"></iframe>
+  	~~~
+  
+  	
+  
 - download：使用该属性，在下载资源时提供一个默认的保存文件名
 
 
@@ -388,9 +400,7 @@ HTML 的 **`<del>`** 标签表示一些被从文档中删除的文字内容。�
 
 
 
-## 表格
 
-在一般业务中，表格经常用于展示数据。
 
 ## 多媒体元素
 
@@ -400,7 +410,7 @@ HTML 的 **`<del>`** 标签表示一些被从文档中删除的文字内容。�
 
 - src属性：说明图片的URL。
 - alt属性：在无法显示图片时，HTML渲染alt属性的内容。推荐设置为空值`alt=""`。一般写入描有关图片内容的主要信息
-- height、width属性，设置`<img>`的大小。默认情况下（不设置height、width属性）元素的内容和尺寸由外部资源（像是一个图片或视频文件）所定义。然而，你不应该使用 HTML 属性来改变图片的大小，在把图片放到你的网站页面之前，你应该使用图形编辑器使图片的尺寸正确。
+- height、width属性，设置`<img>`的大小。默认情况下（不设置height、width属性）元素的内容和尺寸由外部资源（像是一个图片或视频文件）所定义。然而，你不应该使用 HTML 属性来改变图片的大小，在把图片放到你的网站页面之前，你应该使用图形编辑器使图片的尺寸正确。此外还可以通过**CSS的object-fit**属性调整图片的适应模式
 - title属性：图片的额外信息。当鼠标悬停在`img`上面时，这部分信息将以工具提示的形式显示。
 
 
@@ -438,6 +448,8 @@ Love is a spirit all compact of fire,
     by William Shakespeare</figcaption>
 </figure>
 ~~~
+
+
 
 
 
@@ -565,6 +577,8 @@ WEBVTT
         width="800" height="1200" typemustmatch>
   <p>You don't have a PDF plugin, but you can <a href="myfile.pdf">download the PDF file.</a></p>
 </object>
+
+<embed type="video/quicktime" src="movie.mov" width="640" height="480">
 ~~~
 
 更多请见(https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/object)、(https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/embed)
@@ -778,3 +792,14 @@ WEBVTT
 
 
 
+## 全局属性
+
+class属性允许多个值，值之间用空格分割
+
+~~~html
+<a class="main container"> </a>
+~~~
+
+id属性唯一标识该元素。
+
+name属性可以标识多个元素。

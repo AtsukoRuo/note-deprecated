@@ -29,7 +29,7 @@
 
 
 
-后来，人们开始使用浮动进行布局（**十分不推荐**）。更加现代的做法是使用`Flex`、`Grid`进行布局。
+后来，人们开始使用浮动进行布局（**十分不推荐**），这需要很多的trick，增加程序员的心智负担。更加现代的做法是使用`Flex`、`Grid`进行布局。
 
 
 
@@ -128,6 +128,8 @@ flex是flex-grow、flex-shrink、flex-basis的简写属性。
 
 
 之后flex-grow和flex-shrink来决定缩放规则。
+
+> 一定要注意，flex项的响应式主要就体现在flex-grow中而不是在flex-basis中。
 
 容器中的剩余空间根据**flex-grow**比例进行分配。
 $$
@@ -367,7 +369,7 @@ place-items同时设置justify-items与align-items。
 
 
 
-**position: relative**，相对定位，它相对于本身进行定位。跟固定或者绝对定位不一样，不能用 top、right、bottom 和 left 改变相对定位元素的大小。这些值只能让元素在上、下、左、右方向移动（偏移）。可以用 top 或者 bottom，但它们不能一起用（bottom 会被忽略）。同理，可以用 left 或 right，但它们也不能一起用（right 会被忽略）。**它不会脱离正常的文本流**。更常见的用法是使用 position: relative 给它里面的绝对定位元素创建一个包含块。
+**position: relative**，相对定位，它相对于本身进行定位。跟固定或者绝对定位不一样，不能用 top、right、bottom 和 left 改变相对定位元素的大小。这些值只能让元素在上、下、左、右方向移动（偏移）。可以用 top 或者 bottom，但它们不能一起用（bottom 会被忽略）。同理，可以用 left 或 right，但它们也不能一起用（right 会被忽略）。**它不会脱离正常的文本流**。更常见的用法是使用 position: relative 给它里面的绝对定位元素创建一个包含块，从而实现精妙、难处理的布局。
 
 
 
