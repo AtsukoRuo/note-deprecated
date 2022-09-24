@@ -88,7 +88,7 @@
 
 
 
-实际上CSS中的grid容器可以完美取代这种做法。
+实际上，CSS中的grid容器可以完美取代这种做法。
 
 ## Flexbox
 
@@ -162,6 +162,8 @@ align-items控制item在副轴上的位置
 algin-content，控制在item在副轴上的间距，在flex-wrap : wrap下才有意义
 
 <img src="figure/align-content.png" style="zoom:50%;" />
+
+> inline + line height可以在实现弹性盒子换行的效果，在某些场合下（贴标签）中很简单有效。
 
 ## Grid
 

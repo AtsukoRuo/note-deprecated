@@ -1,4 +1,4 @@
-# CSS 建议
+# CSS 响应式设计
 
 [TOC]
 
@@ -143,7 +143,19 @@ main {
 
 
 
+@supports 规则可以用来查询是否支持该 CSS 特性
 
+~~~css
+@supports (display: grid) {
+     .portfolio {
+         display: grid;
+         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+         grid-auto-rows: 1fr;
+    }
+ }
+~~~
+
+如果支持就应用这些样式，否则就忽略掉。
 
 ## 模块化CSS
 
@@ -168,6 +180,8 @@ main {
 
 模块化最重要的一点就是**选择器由单个类名构成的**，这样模块就可以在任意上下文中重复使用，没有任何约束。试想这样的`#sidebar.message`，那么message模块只能用在#sidebar元素的内容，使用场景就受限了。
 
+模块的命名不要太具体。比如button--blue 、button--red
+
 如果一个模块要进一步满足特定的需求，那么就需要**修饰符（modifiers）**来实现，修饰符类样式不需要重新定义整个模块，只需覆盖要改变的部分。使用时把主模块类名和修饰符类名同时添加到元素上，就可以使用修饰符了。常用的写法是使用两个连字符来表示修饰符，比如 message--error。
 
 ~~~css
@@ -189,7 +203,7 @@ main {
 - 提升了选择器优先级，可扩展性差。
 - 跟HTML结构绑定在一起，不可复用。
 
-推荐使用修饰符约定：`dropdown--dark`
+推荐使用修饰符：`dropdown--dark`
 
 
 
@@ -209,7 +223,39 @@ main {
 
 模块封装的一个非常重要的原则，我们把它叫作**单一职责原则（Single Responsibility Principle）**。尽可能把多种功能分散到不同的模块中，这样每个模块就可以保持高内聚、低耦合。
 
+我们在响应式时已经了解过通过JavaScript动态添加类，这让的类称为**状态类（static class）**，状态类一般以 is-或者 has-开头。
+
+
+
+有时候，我们需要用一个类来对元素做一件简单明确的事，比如让文字居中、让元素左浮动，或者清除浮动。这样的类被称为**工具类（utility class）**。由于工具类的意义，工具类应该是唯一使用 important 注释的地方！对于大部分网站，最多十几个工具类就够用了
+
+~~~CSS
+.text-center {
+ 	text-align: center !important;
+} 
+.float-left {
+     float: left;
+} 
+.clearfix::before, 
+.clearfix::after {
+ 	content: " ";
+ 	display: table;
+} 
+.clearfix::after {
+ 	clear: both;
+} 
+.hidden {
+ 	display: none !important;
+}
+~~~
+
+
+
+
+
+
+
 ## 模式库
 
-
+不再做介绍，有需求再看，个人小项目感觉用不太到。
 
