@@ -68,7 +68,7 @@ let A\u00e9 = 1;
 let Aé = 1;	//等价
 ~~~
 
->如果你在程序中使用了非 ASCII 字符， 必须知道Unicode允许用多种编码方式表示同一个字符。例如， 符串“ ”可以被编码 Unicode 字符 u00e9，也可以被编码为一个常规ASCII字符“e“后跟一个重音标记 u0301。看上去一样，但二进制编码却不一样，Javascript因此也会认为它们是不同的。所以在使用Unicode时，务必保证Unicode标准化。
+>如果你在程序中使用了非 ASCII 字符， 必须知道Unicode允许用多种编码方式表示同一个字符。例如， 字符串“ ”可以被编码 Unicode 字符 u00e9，也可以被编码为一个常规ASCII字符“e“后跟一个重音标记 u0301。看上去一样，但二进制编码却不一样，Javascript因此也会认为它们是不同的。所以在使用Unicode时，务必保证Unicode标准化。
 
 
 
@@ -94,7 +94,7 @@ let y = x + f(a + b).toString();
 
 ~~~
 
-更多未加分号而造成匪夷所思的现象，就不再介绍了其
+更多未加分号而造成匪夷所思的现象，就不再介绍了其它情况了
 
 ## 类型系统
 
@@ -193,7 +193,7 @@ foo2`Java${a}script${b}`;
 
 要理解符号**Symbol**，必须先要认识到Object是一个属性的无序集合，而每个属性都要有一个名字。属性名可以是一个字符串（ES6之前一直必须是）或者是一个符号。
 
-Symbol没有字面量，要获取到一个Symbol值，需要调用Symbol(string)函数。这个函数永远不会返回相同的值，即使每次传入的参数都是一样的。，Symbol.for(string)会创建一个全局符号，相同的参数会返回相同的值。符号的toString方法返回这种形式的字符串"Symbol(string)"，而Symbol.keyFor()会直接返回“string”
+Symbol没有字面量，要获取到一个Symbol值，需要调用Symbol(string)函数。这个函数永远不会返回相同的值，即使每次传入的参数都是一样的，利用这个特性，**可以为对象创建唯一的属性名**。Symbol.for(string)会创建一个全局符号，相同的参数会返回相同的值。符号的toString方法返回这种形式的字符串"Symbol(string)"，而Symbol.keyFor()会直接返回“string”
 
 ~~~javascript
 let s = Symbol.for("shared");
@@ -212,7 +212,7 @@ Symbol.keyFor();			//"shared"
 - 全局常量：undefined、Infinity、NaN
 - 全局函数：isNaN()、parseInt()、eval()
 - 构造函数：Date()、RegExp()、String()、Object()
-- 全局对象：Math、JSON
+- 全局对象：Math、JSON、Number（由原始类型封装而成对象类型）
 
 > 最好将这些全局标识符视为关键字
 
@@ -368,7 +368,7 @@ const i = 10;
 
 
 
-let、const都有**块级作用域**的，而且有作用域屏蔽规则。var变量不具有块作用域，但其作用域还是限制在函数体当中，即函数作用域。
+let、const都有**块级作用域**的。var变量具有**函数级作用域**，它们都有**作用域屏蔽规则**
 
 通过var声明的全局变量是全局对象的属性，但不可被delete操作符删除。而let、const声明的全局变量和常量不是全局对象的属性。
 
@@ -376,7 +376,7 @@ var多次声明同名变量是合法的，而let在同一作用域中声明全�
 
 var声明最不同寻常的特性就是**作用域提升（hoisting）**，变量的声明被转移到了函数顶部，而初始化仍在原始代码位置中。
 
-> 不推荐在生产环境中使用var变量
+> ***不推荐在生产环境中使用var变量***
 
 
 
@@ -407,19 +407,37 @@ let [x, y] = [1];
 
 **右侧必须是可迭代的对象**。上述例子中右侧都是数组。
 
+
+
 ~~~JavaScript
 let transparent = {r : 0.0, g : 0.0, b : 0.0};
-let {r, g, b} = transparent;
+let {r, g, b} = transparent;			//此时创建了r g b变量
 ~~~
 
-如果右侧是普通对象而不是数组，则左侧变量名必须与某个解构对象的属性名相同，否则将会被赋予undefined。但是以冒号分割的标识符对可以接触这一限制，第一个标识符是要解构其值的属性名，第二个标识符是要把值赋给它的变量名。
+如果右侧是普通对象而不是数组，则左侧变量名必须与某个解构对象的属性名相同，否则将会被赋予undefined。如果不想赋值为undefined，可以另指定默认值
 
 ~~~javascript
+let {sin1 : sin2 = 3, cos = 2} = Math;			//sin2 = 3, cos = function cos
+~~~
+
+
+
+注意到创建变量的名字必须是对象的属性名，但是以冒号分割的标识符对可以解除这一限制，第一个标识符是要解构其值的属性名，第二个标识符是要把值赋给它的变量名。
+
+~~~JavaScript
 let {sin, cos, x} = Math		//x = undefined
 
-let sin1;
-let {sin : sin1} = Math;
+//let sin1;
+let {sin : sin1} = Math;		//创建了sin1变量
 ~~~
+
+可以把对象其余的属性收集到以...开头的最后一个元素中
+
+~~~javascript
+let {x, ...args} = {x : 1, y : 2, z : 3};	//args = {y : 2, z : 3}
+~~~
+
+
 
 更复杂的解构
 
@@ -687,7 +705,7 @@ for语句中的循环变量可以是const的，只要确保在循环体内不会
 
 for/of中的object必须是可迭代对象，否则会抛出TypeError。现在只需知道数组、字符串、集合、映射是可迭代的就行了。这种迭代是“实时的”，在statement修改object会立即反应到下一次迭代当中。
 
-for/in循环将对象属性名赋给variable，for/in循环并不会遍历不可枚举属性，遍历时还包括继承属性。
+for/in循环将对象属性名赋给variable，for/in循环并不会遍历不可枚举属性以及符号，遍历时还包括继承属性。
 
 
 
@@ -733,4 +751,232 @@ try {
 还有with语句，现在已经废除，不在介绍。
 
 debugger语句设置调式断点。
+
+
+
+## 数组 
+
+在JavaScript，数组是有序属性集合。
+
+数组是一种特殊的Javascript对象，因此数组索引更像是字符串类型的属性名，只不过是整数形式的。
+
+JavaScript数组实系数的，即元素不一定具有连续的索引，中间可能有空位。
+
+数组是无类型限制的，即数组中的元素可以是任意类型，元素之间的类型可以不同。ES6增加“定型数组”（typed array）。它和C++数组的实现相似
+
+
+
+### 创建数组
+
+**数组字面量**
+
+~~~javascript
+let primes = [2, [2, 3, 4], "string", true, {x : 1, y : 1,},];
+let sparse = [1, , , , 2]			//创建一个稀疏数组，undifined
+~~~
+
+最后一个分号会被忽略掉。
+
+
+
+**扩展操作符**（在对象字面值中也有类似的用法）
+
+~~~javascript
+let a = [1, 2, 3]
+let b = [0, ...a, 4];		//深赋值a
+let letters = [..."hello world"];
+[...new Set(letters)];
+~~~
+
+扩展操作符可用于任何可迭代的对象，
+
+
+
+Array构造函数
+
+~~~javascript
+let a = new Array();
+let a = new Array(10);		//注意，仅仅会分配空间，甚至连索引都没建立
+let a = mew Array(5, 4)		//a = [5, 4]
+~~~
+
+Array.of 工厂方法
+
+~~~javascript
+Array.of ()	//[]
+Array.of (0) //[0]
+Array.of(5, 4) //[5, 4]
+Array.from(iterable)	//等价于[...iterable]
+Array.from(iterable, map())	
+~~~
+
+
+
+### 访问、添加、删除、迭代数组元素 
+
+只要理解数组是特殊的对象就可以了，它会继承Array.property，其余和普通对象没什么不同。同时你使用小于$2^{32} - 1$非负整数作为索引时，数组会有特殊的行为。
+
+对数组元素使用delete操作符并不会修改length属性，也不会将高索引位的元素向下移动来填充被删除属性的空性，这就是导致数组稀疏的原因。稀疏数组中空闲位置所对应的索引是被移除的。
+
+
+
+第一，它会维护一个不变式（invariant）——数组无论稀疏与否，任何元素的索引都不会大于或等于数组的length。因此length属性设置为小于当前值的非负整数n，那么任何索引大于或等于n的数组元素都会从数组中删除。而且给索引为i的数组元素赋值，而i大于或等于length，那么length就会被设置为i+1。
+
+
+
+~~~javascript
+let letters = [..."HelloWorld"];
+for (let letter of letters) {
+
+}
+
+for (let [index, letter] of letters.entries()) {
+	
+}
+
+letters.forEach(letter => {
+	uppercase += letter.toUpperCase();
+})
+//forEach方法会自动跳过undefined
+//流式编程会详细介绍这一点。
+
+
+~~~
+
+
+
+### 数组的迭代器方法（流式编程） & 其他方法
+
+数组的迭代器方法接受两个参数，第一个参数是对元素处理的函数，第二个参数（可选）。这些迭代器方法都会自动忽略掉undefined元素。对元素处理的函数可以接收三个参数：数组元素的值、数组元素的索引、数组本身，一般我们只需第一个参数，其余两个参数可以忽略掉。
+
+> 尽量避免在迭代器方法中函数参数的副作用会影响原数组的元素！
+
+
+
+forEach会遍历数组中的每个元素，会跳过undefined元素
+
+~~~javascript
+let data = [1, 2, 3, 4];
+data.forEach(value => {
+    sum += value;
+});
+data.forEach(function (v, i, a) { a[i] = v + 1});
+~~~
+
+
+
+map方法对原数组处理后返回一个新数组。如果数组是稀疏的，那么返回的数组与原始数组一样稀疏：长度相同，缺失的元素也相同。
+
+~~~javascript
+let data = [1, 2, 3, ,4];
+console.log(data.map(x => x * x));		//[1, 4 ,9, ,16]
+console.log(data);					   //[1, 2, 3, ,4]
+~~~
+
+
+
+filter方法对原数组进行筛选，保留这样的元素，作为断言函数的参数而函数返回true。它会自动跳过undefined元素
+
+~~~javascript
+let a = [5, 4, 3, 2, 1];
+a.filter(x => x < 3);
+a.filter((x, i) => i % 2 == 0)
+~~~
+
+
+
+find()与filter()类似，不过找到第一个使断言函数返回true的元素后就直接返回该元素，如果找不到那么就返回undefined。
+
+~~~JavaScript
+let a = [1, 2, 3, 4, 5];
+a.find(x => x % 5 === 0);
+~~~
+
+
+
+every()对考察所有的数组元素，若全都通过则返回true。some()与every()类似，不过只需一个元素满足条件就返回true
+
+~~~javascript
+let a = [1, 2, 3, 4, 5];
+a,every(x => x < 10);		//true
+a.some*(x => x > 4)			//true
+~~~
+
+
+
+reduce()使用我们指定的函数归并数组元素，最终并产生一个值。它接受两个参数，第一个参数是归并函数，第二个参数是初始值，省略掉则数组的第一个元素作为初始值。
+
+~~~javascript
+let a = [1, 2, 3, 4];
+a.reduce((x, y) => x * y, 2)	//48
+~~~
+
+归并函数的第一个参数是之间计算的结果。
+
+reduceRight与reduce类似，不过是从高索引低索引进行处理的。
+
+
+
+flat()打平数组
+
+~~~javascript
+let a = [1, [2, [3, [4]]]];
+a.flat(1);	//[1, 2, [3, [4]]]
+a.flat(2);	//[1, 2, 3, [4]
+a.flat(3);	//[1, 2, 3, 4]
+a.flat(4);	//[1, 2, 3, 4]
+~~~
+
+
+
+`a.flatMap(f)`等价于`a.map(f).flat()`，但是前者效率远高于后者。
+
+
+
+concat返回一个新的数组，并不会修改调用它的数组，并且它会打平一层
+
+~~~javascript
+let a = [1, 2, 3];
+a.concat(4, 5);				//[1, 2, 3 ,4 ,5]
+a.concat([4, 5], [6, 7]);	//[1, 2, 3 ,4 ,5]
+a.concat(4, [5, [6, 7]]);	//[1, 2 ,3 ,4, 5, [6, 7]]
+~~~
+
+
+
+数组还使用push、pop、shift、unshift函数实现栈和队列操作
+
+unshift用于在数组开头添加一个或多个元素，已有元素的索引会相应地向更高索引移动，井返回数组的新长度 shift 删除并返回数组的第一个元素，所有后续元素都会向下移动一个位置。
+
+
+
+数组还定义了几个处理连续区域的方法。
+
+~~~javascript
+slice()
+splice()
+fill()
+copyWhitin()
+indexOf()
+lastIndexOf()
+includes()
+sort()
+reverse()
+join()
+~~~
+
+
+
+### 类数组对象
+
+只要该对象具有length属性，并且该length属性是非负整数，同时具有整数形式的属性名，那么该对象就是类数组对象。
+
+~~~javascript
+let a = {"0" : "a", "1" : "b", "2" : "c", length : 3};
+Array.prototype.join.call(a, "+");
+~~~
+
+
+
+数组的方法有意设计成“泛型”算法，但是类数组对象的原型并不是Array.property，可以通过使用Function.call()方法来解决。					  
 
