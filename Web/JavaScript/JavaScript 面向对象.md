@@ -4,7 +4,7 @@
 
 ## 概述
 
-JavaScript中的对象是一个属性的无序集合，每个属性都有名字和值。因此可以把对象看为从字符串到值的映射，这与“散列”、“字典”、**"关联数组"**相似。实际上，经常将对象当作关联数组来使用。
+JavaScript中的对象是一个属性的无序集合，每个属性都有名字和值。因此可以把对象看为从字符串（甚至可以认为标识符隐式转换成字符串）到值的映射，这与“散列”、“字典”、**"关联数组"**相似。实际上，经常将对象当作关联数组来使用。
 
 但JavaScript中的对象可以从其他对象中继承属性，这个其他对象称为其**原型**。为了与继承过来的属性相区分，JavaScript将非继承属性称为**“自有属性”**。
 
@@ -12,13 +12,43 @@ JavaScript中的对象是引用类型、可修改的。
 
 对对象的操作包括：创建、设置、查询、删除、测试、枚举
 
-每个属性除了有名字和值之外，还有三个属性特性（property attribute）：
+​																																																																					
+
+## 属性
+
+每个属性除了有名字和值（value）之外，还有三个属性特性（property attribute）：
 
 - writable（可写）：是否可以设置属性的值
 - enumerable（可枚举）：是否可以在for/in循环中返回属性的名字
 - configurable（可配置）：是否可以删除该属性，以及是否可以修改该属性特性
 
-很多 JavaScript 内置对象拥有只读、不可枚举或不可配置的属性。不过，默认情况下，我们所创建对象的所有属性都是可写、可枚举和可配置的。·																																																																					
+很多 JavaScript 内置对象拥有只读、不可枚举或不可配置的属性。不过，默认情况下，我们所创建对象的所有属性都是可写、可枚举和可配置的。·
+
+
+
+Object.getOwnPropertyDescriptor允许查询属性的特征
+
+~~~javascript
+let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName);
+~~~
+
+obj：需要从中获取信息的对象。propertyName：属性的名称。
+
+~~~javascript
+let o = { attr : 2 };
+let d = Object.getOwnPropertyDescriptor(o, "attr");		//d = { value: 2, writable: true, enumerable: true, configurable: true }
+~~~
+
+Object.defineProperty()可以修改对象的属性特性
+
+~~~javascript
+let user = {};
+Object.defineProperty(user, "name", {
+    value : "John"
+})
+~~~
+
+如果对象中没有该属性，则自动添加该属性，此时若某个属性特性没指定，则默认是false的。
 
 
 
@@ -34,7 +64,7 @@ JavaScript中的对象是引用类型、可修改的。
 
 
 
-
+**注意this可能指向子类**
 
 
 
@@ -237,7 +267,7 @@ Reflect.ownKeys()，返回自有的属性数组
 
 
 
-使用Object.assign()来**扩展对象**。该方法接受两个或多个对象作为其参数，第一个参数是目的对象，而其余参数都是源对象。它会把源对象中可枚举的自有属性（包括符号类型的属性）按参数顺序依次复制到目的对象，注意！同名属性会被覆盖。
+使用Object.assign()来**扩展对象**。该方法接受两个或多个对象作为其参数，第一个参数是目的对象，而其余参数都是源对象。它会把源对象中可枚举的自有属性（包括符号类型的属性）按参数顺序依次复制到目的对象，注意！同名属性会被覆盖。但是不复制属性特性，而且复制访问器时，仅仅复制访问器的返回值，而不是访问器本身。复制setter时，其复制值为undefined。
 
 
 
@@ -273,6 +303,8 @@ let p = JSON.parse(s);
 
 JavaScript还支持对象定义访问器属性，即获取方法（getter）、设置方法（setter）
 
+**这里的this可能指向子类！**
+
 ~~~JavaScript
 let o = {
 	dataProp : value,
@@ -285,7 +317,7 @@ let o = {
 
 访问器的方法名就是属性名，可以是符号类型的也可以是字符串类型的，与数据属性别无二致。访问器属性也是可以继承的。
 
-
+使用访问器就像访问普通数据属性一样，不需要像函数调用那种形式。
 
 
 
@@ -295,7 +327,7 @@ let o = {
 
 JavaScript的基于原型的继承机制与C++、Java的基于类的继承机制有着本质区别。当且仅当两个对象继承同一个原型对象时，它们才是一个类的**实例**。
 
-
+**注意this可能指向子类**
 
 通过工厂方法定义类
 

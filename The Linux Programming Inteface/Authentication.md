@@ -30,7 +30,7 @@ $chmod g+s proc
 
 ### saved set-UID
 
-当进程exec设置了Set-User-ID权限位的可执行文件时，那么系统将进程的有效UID设置为文件所有者的UID，以便有权限执行该文件。Linux中使用set-user-ID的程序包括：passwd、mount、su等。
+当进程exec设置了Set-User-ID权限位的可执行文件时，那么系统将进程的有效UID设置为文件所有者的UID，以便有权限执行该文件。这就实现了一种机制：当执行特定程序时，用户临时获取特权。Linux中使用set-user-ID的程序包括：passwd、mount、su等。
 
 saved set-user-ID与设置set-user-ID特权位的程序配合使用。当exec可执行文件时，会依次发生如下事件：
 

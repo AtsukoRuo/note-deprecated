@@ -563,7 +563,7 @@ console.log("1" in x4);		//true
 
 
 
-**instanceof**左操作数是一个对象，右操作数是一个类型（考虑超类的情况）。如果对象是该类型的实例则返回true。要了解instanceof的工作原理必须先要了解原型链！
+**instanceof**左操作数是一个对象，右操作数是一个构造函数。`o instanceof f`在求值时，会在o的原型链中查找f.prototype的值。
 
 
 

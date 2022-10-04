@@ -368,3 +368,340 @@ let error = new HTTPError(404, "Not Found", "http://example.com/");
 
 
 
+## 元编程
+
+### 对象
+
+每个属性除了有名字和值（value）之外，还有三个属性特性（property attribute）：
+
+- writable（可写）：是否可以设置属性的值
+- enumerable（可枚举）：是否可以在for/in循环中返回属性的名字
+- configurable（可配置）：是否可以删除该属性，以及是否可以修改该属性特性，除了value属性以及writable由true修改为false
+- value：属性的值
+
+访问器的属性特性区别于数据属性的：
+
+- get：
+- set
+- enumberable
+- configurable
+
+很多 JavaScript 内置对象拥有只读、不可枚举或不可配置的属性。不过，默认情况下，我们所创建对象的所有属性都是可写、可枚举和可配置的。·
+
+
+
+使用属性描述符对象（property descriptor）获取并设置属性特性。
+
+Object.getOwnPropertyDescriptor允许查询属性的特征。obj：需要从中获取信息的对象。propertyName：属性的名称。对于propertyName不存在或者继承过来的，该函数返回undefined
+
+~~~javascript
+let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName);
+//if no propertyName exists，then desriptor is set by undefined
+//inherited proertyName is set by undefined too
+let o = { attr : 2 };
+let d = Object.getOwnPropertyDescriptor(o, "attr");		//d = { value: 2, writable: true, enumerable: true, configurable: true }
+~~~
+
+Object.defineProperty()可以修改对象的属性特性。如果对象中没有该属性，则自动添加该属性，此时若某个属性特性没指定，则默认是false的。
+
+~~~javascript
+
+
+let user = {};
+Object.defineProperty(user, "name", {
+    value : "John"
+})
+
+let p = Object.defineProperties({}, {
+    x : {value : 1, writable : true, enumberable : true, configurable : true},
+    y : {value : 1, writable : true, enumberable : true, configurable : true},
+        get() {return Math.sqrt(this.x)},
+        enumberable : true,
+        configurable : true
+    }
+})
+~~~
+
+
+
+Object.preventExtensions()让对象不可扩展，即不允许向该对象添加属性。这项操作是不可逆的，而且给不可扩展对象的原型添加新属性，则不可扩展对象仍然会继承这些属性
+
+Object.seal与object.preventExtensions类似，它不能给对象添加新属性，也不能删除或配置已有自有属性。Object.freeze会让对象不可扩展，也不能删除或配置已有自有属性，而且将所有的自有属性变为只读的，但这不影响访问器属性发挥作用。
+
+### 反射与代理
+
+一个 `Proxy` 对象包装另一个对象并拦截诸如读取/写入属性和其他操作，可以选择自行处理它们，或者透明地允许该对象处理它们。代理对象有一个局限性，就是它会抛弃包装对象的内部插槽或者内部方法，在某些情况下会导致错误，不过仍有补救的方法。
+
+声明语法如下：
+
+~~~javascript
+let proxy = new Proxy(target, handler);
+~~~
+
+- target：是要包装的对象
+- handler：`handler` —— 代理配置。带有“捕捉器”（“traps”，即拦截操作的方法）的对象。比如 `get` 捕捉器用于读取 `target` 的属性，`set` 捕捉器用于写入 `target` 的属性，等等。
+
+对 `proxy` 进行操作，如果在 `handler` 中存在相应的捕捉器，则它将运行，并且 Proxy 有机会对其进行处理，否则将直接对 target 进行处理。此外，**代理对象不是被包装对象**，所以===它们并不相等，但是可以影响到包装对象。
+
+
+
+~~~javascript
+let target = {};
+let proxy = new Proxy(target, {});
+proxy.test = 5;
+console.log(target.test);		//这里test不是继承属性，而是自有属性
+console.log(proxy.test);
+~~~
+
+
+
+对于对象的大多数操作，Javascript规范中有一个“内部方法”，它**描述最底层的工作方式**。例如 `[[Get]]`，用于读取属性的内部方法，`[[Set]]`，用于写入属性的内部方法，等等。这些方法仅在规范中使用，我们不能直接通过方法名调用它们。
+
+对于每个内部方法，此表中都有一个捕捉器：可用于添加到 `new Proxy` 的 `handler` 参数中以拦截操作的方法名称：
+
+| 内部方法                | Handler 方法               | 何时触发                                                     |
+| :---------------------- | :------------------------- | :----------------------------------------------------------- |
+| `[[Get]]`               | `get`                      | 读取属性                                                     |
+| `[[Set]]`               | `set`                      | 写入属性                                                     |
+| `[[HasProperty]]`       | `has`                      | `in` 操作符                                                  |
+| `[[Delete]]`            | `deleteProperty`           | `delete` 操作符                                              |
+| `[[Call]]`              | `apply`                    | 函数调用                                                     |
+| `[[Construct]]`         | `construct`                | `new` 操作符                                                 |
+| `[[GetPrototypeOf]]`    | `getPrototypeOf`           | [Object.getPrototypeOf](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf) |
+| `[[SetPrototypeOf]]`    | `setPrototypeOf`           | [Object.setPrototypeOf](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf) |
+| `[[IsExtensible]]`      | `isExtensible`             | [Object.isExtensible](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/isExtensible) |
+| `[[PreventExtensions]]` | `preventExtensions`        | [Object.preventExtensions](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/preventExtensions) |
+| `[[DefineOwnProperty]]` | `defineProperty`           | [Object.defineProperty](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty), [Object.defineProperties](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperties) |
+| `[[GetOwnProperty]]`    | `getOwnPropertyDescriptor` | [Object.getOwnPropertyDescriptor](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor), `for..in`, `Object.keys/values/entries` |
+| `[[OwnPropertyKeys]]`   | `ownKeys`                  | [Object.getOwnPropertyNames](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyNames), [Object.getOwnPropertySymbols](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertySymbols), `for..in`, `Object.keys/values/entries` |
+
+JavaScript 强制执行某些不变量 —— 内部方法和捕捉器必须满足的条件。
+
+其中大多数用于返回值：
+
+- `[[Set]]` 如果值已成功写入，则必须返回 `true`，否则返回 `false`。
+- `[[Delete]]` 如果已成功删除该值，则必须返回 `true`，否则返回 `false`。
+
+还有其他一些不变量，例如：
+
+- 应用于代理（proxy）对象的 `[[GetPrototypeOf]]`，必须返回与应用于被代理对象的 `[[GetPrototypeOf]]` 相同的值。换句话说，读取代理对象的原型必须始终返回被代理对象的原型。
+
+捕捉器可以拦截这些操作，但是必须遵循上面这些规则。
+
+
+
+下面给出get、set、ownKeys、apply的捕捉器用例：
+
+要拦截读取操作，`handler` 应该有 `get(target, property, receiver)` 方法。
+
+- target 目标对象
+- property 目标属性名
+- receiver 
+
+~~~javascript
+let numbers = [0, 1, 2];
+//代理应该在所有地方都完全替代目标对象。目标对象被代理后，任何人都不应该再引用目标对象。否则很容易搞砸。
+numbers = new Proxy(numbers, {
+    get(target, prop) {
+        if (prop in target) return target[prop];
+        return 0;
+    }
+})
+~~~
+
+
+
+当写入属性时 `set` 捕捉器被触发。
+
+`set(target, property, value, receiver)`：
+
+- `target` —— 是目标对象，该对象就是 `new Proxy`的第一个参数。
+- `property` —— 目标属性名称，
+- `value` —— 目标属性的值，
+- `receiver` —— 与 `get` 捕捉器类似，仅与 setter 访问器属性相关。
+
+
+
+~~~JavaScript
+let numbers = [];
+numbers = new Proxy(numbers, { // (*)
+  set(target, prop, val) { // 拦截写入属性操作
+    if (typeof val == 'number') {
+      target[prop] = val;
+      return true;
+    }
+    return false;
+  }
+});
+numbers.push(1); // 添加成功
+numbers.push("test"); // TypeError（proxy 的 'set' 返回 false）
+~~~
+
+
+
+`Object.keys`，`for..in` 循环和大多数其他遍历对象属性的方法都使用内部方法 `[[OwnPropertyKeys]]`（由 `ownKeys` 捕捉器拦截) 来获取属性列表。
+
+这些方法在细节上有所不同：
+
+- `Object.getOwnPropertyNames(obj)` 返回非 symbol 键。
+- `Object.getOwnPropertySymbols(obj)` 返回 symbol 键。
+- `Object.keys/values()` 返回带有 `enumerable` 标志的非 symbol 键/值（属性标志在 [属性标志和属性描述符](https://zh.javascript.info/property-descriptors) 一章有详细讲解)。
+- `for..in` 循环遍历所有带有 `enumerable` 标志的非 symbol 键，以及原型对象的键。
+
+
+
+`apply(target, thisArg, args)` 捕捉器能使代理以函数的方式被调用：
+
+- `target` 是目标对象（在 JavaScript 中，函数就是一个对象），
+- `thisArg` 是 `this` 的值。
+- `args` 是参数列表。
+
+虽然闭包也可以捕捉函数的内部状态，但是用闭包进行包装后，就失去了对原始函数属性的访问，但是创建代理对象可以解决这个问题
+
+~~~javascript
+function delay(f, ms) {
+	return function() {
+        setImteout(() => f.apply(this, arguments), ms);
+    }
+}
+
+function delay(f, ms) {
+	return new Proxy(f, {
+        apply(target, thisArg, args) {
+			setImteout(() => f.apply(this, arguments), ms);
+        }
+    })
+}
+~~~
+
+
+
+`Reflect` 是一个内建对象，可简化 `Proxy` 的创建。前面所讲过的内部方法，例如 `[[Get]]` 和 `[[Set]]` 等，都只是规范性的，不能直接调用。`Reflect` 对象使调用这些内部方法成为了可能。以下是执行相同操作和 `Reflect` 调用的示例：
+
+| 操作                | `Reflect` 调用                      | 内部方法        |
+| :------------------ | :---------------------------------- | :-------------- |
+| `obj[prop]`         | `Reflect.get(obj, prop)`            | `[[Get]]`       |
+| `obj[prop] = value` | `Reflect.set(obj, prop, value)`     | `[[Set]]`       |
+| `delete obj[prop]`  | `Reflect.deleteProperty(obj, prop)` | `[[Delete]]`    |
+| `new F(value)`      | `Reflect.construct(F, value)`       | `[[Construct]]` |
+| …                   | …                                   | …               |
+
+**对于每个可被 `Proxy` 捕获的内部方法，在 `Reflect` 中都有一个对应的方法，其名称和参数与 `Proxy` 捕捉器相同。**所以，我们可以在捕捉器中使用 `Reflect` 来将操作转发给原始对象。
+
+
+
+
+
+下面我们说明一个很严重的问题
+
+~~~javascript
+let user = {
+    _name : "Guest",
+    get name() {
+        return this._name;
+    }
+};
+
+let userProxy = new Proxy(user, {
+    get(target, prop, receiver) {
+        return target[prop];
+    }
+});
+
+let admin = {
+    __proto__ : userProxy,
+    _name : "Admin"
+};
+
+console.log(admin.name);
+~~~
+
+问：输出是什么？答：Guest，不是期望的Admin。这是因为return target[prop];此时调用getter时，this指向了target，即user。所以get捕捉器提供了receiver参数，保存正确的this。而getter不能被显式调用，因此不能使用call、apply方法。此时可以使用Reflect.get。综上，修正后的代码是：
+
+~~~javascript
+let userProxy = new Proxy(user, {
+  get(target, prop, receiver) { // receiver = admin
+    return Reflect.get(target, prop, receiver); // (*)
+  }
+});
+~~~
+
+
+
+许多内建对象，例如 `Map`，`Set`，`Date`，`Promise` 等，都使用了所谓的“内部插槽”。例如，`Map` 将项目（item）存储在 `[[MapData]]` 中。内建方法可以直接访问它们，而不通过 `[[Get]]/[[Set]]` 内部方法。所以 `Proxy` 无法拦截它们。这也就是Proxy的局限性。下面就是个例子
+
+~~~javascript
+let map = new Map();
+let proxy = new Proxy(map, {});
+proxy.set('test', 1);		//Error
+~~~
+
+在内部，一个 `Map` 将所有数据存储在其 `[[MapData]]` 内部插槽中。代理对象没有这样的插槽。Map.prototype.set方法试图访问内部属性 `this.[[MapData]]`，但由于 `this=proxy`，在 `proxy` 中无法找到它，只能失败。
+
+这里是一种解决方法：
+
+~~~javascript
+let map = new Map();
+let proxy = new Proxy(map, {
+    get(target, prop, receiver) {
+		let value = Reflect.get(...arguments);
+        return typeof value == 'function' ? value.bind(target) : value;
+    }
+})
+~~~
+
+
+
+注意类的私有字段也是通过内部插槽实现的，JavaScript 在访问它们时不使用 `[[Get]]/[[Set]]`
+
+~~~javascript
+class User {
+  #name = "Guest";
+  getName() {
+    return this.#name;
+  }
+}
+let user = new User();
+user = new Proxy(user, {});
+alert(user.getName()); // Error
+~~~
+
+在调用 `getName()` 时，`this` 的值是代理后的 `user`，它没有带有私有字段的插槽。
+
+
+
+
+
+### 其他
+
+对象的prototype特性指向了对象的原型。对象的[[prototype]]是在对象创建时设定的。
+
+可以通过getPrototypeOf获得对象的原型
+
+~~~javascript
+Object.getPrototypeOf({});		//Object.prototype
+Object.prototpye.isPrototypeOf(o)	//判读o对象的原型是不是Object.prototype
+Object.setPrototypeOf(o, p)		//设置对象o的原型为p
+~~~
+
+Javascript通过`__proto__`属性暴露对象的内部属性prototype。这个`__proto__`属性已经被废弃了
+
+ 
+
+如果instanceof的右侧是一个有[Symbol.hasInstance]方法的对象，那么左操作数作为该方法的参数，表达式的值就是该方法的返回值。
+
+~~~JavaScript
+let uint8 = {
+    [Symbol.hasinstance](x) {
+        return Number.isInteger(x) && x >= 0 && x <= 255
+    }
+}
+~~~
+
+
+
+
+
+## 内部属性和内部方法
+
+这些属性和方法由Javascript引擎所实现，JavaScript运行时没有直接暴露于这些内部插槽，并且内部方法仅限于ECMAScript规范文档与引擎，可以用`Reflect`对象间接访问这些内部方法。这些内部属性和方法在ECMAScript标准中通常以 `[[name]]` 这样的形式来表示。内部属性称为内插槽，它包含与该对象关联的值，以表示对象的某些状态。

@@ -14,7 +14,7 @@ function identifier(variable1, variable2, ...) {
 
 Javascript函数的特点：
 
-- 函数的声明语句会被“提升”到函数块的顶部，但不会像var变量那样成为globalThis的属性。
+- 函数的声明语句会被“提升”到函数块的顶部
 
 - 解释器会在执行函数声明所在块中的任何代码之前定义该函数，这点也与var变量不同。
 
@@ -270,7 +270,17 @@ function max(first = -Infintiy, ...rest) {
 
 
 
-此外还有Arguments对象处理多余的实参，他是一个类数组对象，但是不推荐使用，除非你要维护老项目。
+此外还有arguments对象它包含全部的参数，他是一个类数组对象，但是不推荐使用，除非你要维护老项目。
+
+~~~javascript
+function f(a, b, c) {
+    console.log(arguments);	//{ '0': 1, '1': 2, '2': 3, '3': 4, '4': 5 }
+}
+
+f(1, 2, 3, 4, 5);
+~~~
+
+
 
 
 
