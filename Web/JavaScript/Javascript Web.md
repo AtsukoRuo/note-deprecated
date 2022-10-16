@@ -8,11 +8,15 @@
 
 现在，我们来讨论以浏览器为平台的Javascript。
 
-Javascript在浏览器运行时，有一个**window全局对象**，任何顶级函数、var变量声明都会成为window全局对象的属性。此外，它还代表了浏览器窗口。
+Javascript在浏览器运行时，解释器会提供一个**window全局对象**，任何顶级函数、var变量声明都会成为window全局对象的属性。此外，它还代表了浏览器窗口，在Window大小和滚动一小节我们会用到这个对象。
+
+
 
 **文档对象模型（Document Object Model）**，简称 DOM，描述文档的结构、操作和事件。`document` 对象是页面的主要“入口点”。我们可以使用它来更改或创建页面上的任何内容。[https://dom.spec.whatwg.org](https://dom.spec.whatwg.org/)。
 
 > 另外也有一份针对 CSS 规则和样式表的、单独的规范 [CSS Object Model (CSSOM)](https://www.w3.org/TR/cssom-1/)，这份规范解释了如何将 CSS 表示为对象，以及如何读写这些对象。我们很少需要从 JavaScript 中修改 CSS 规则（我们通常只是添加/移除一些 CSS 类，而不是直接修改其中的 CSS 规则）
+
+
 
 **浏览器对象模型（Browser Object Model）**，简称 BOM，表示由浏览器（主机环境）提供的用于处理文档（document）之外的所有内容的其他对象。例如
 
@@ -234,7 +238,6 @@ document.body.innerHTML += '...';
   // 使用 <p>...</p> 替换 div.outerHTML
   div.outerHTML = '<p>A new element</p>'; // (*)
 
-  // 蛤！'div' 还是原来那样！
   alert(div.outerHTML); // <div>Hello, world!</div> (**)
 </script>
 ~~~
@@ -301,7 +304,7 @@ Element.prototype.sayHi = function() {};	//为所有元素添加
 
 - `elem.hasAttribute(name)` —— 检查特性是否存在。
 - `elem.getAttribute(name)` —— 获取这个特性值。
-- `elem.setAttribute(name, value)` —— 设置这个特性值。
+- `elem.setAttribute(name, value)` —— 设置这个特性值。value是一个字符串
 - `elem.removeAttribute(name)` —— 移除这个特性。
 
 我们也可以使用 `elem.attributes` 读取所有特性：属于内建 [Attr](https://dom.spec.whatwg.org/#attr) 类的对象的集合，具有 `name` 和 `value` 属性。
@@ -329,7 +332,7 @@ Element.prototype.sayHi = function() {};	//为所有元素添加
 
 	- `document.createElement(tag)` —— 用给定的标签创建一个元素节点，
 	- `document.createTextNode(value)` —— 创建一个文本节点（很少使用），
-	- `elem.cloneNode(deep)` —— 克隆元素，如果 `deep==true` 则与其后代一起克隆。
+	- `elem.cloneNode(deep)` —— 深克隆元素，如果 `deep==true` 则与其后代一起克隆。
 
 - 插入和移除节点的方法：
 
@@ -337,10 +340,61 @@ Element.prototype.sayHi = function() {};	//为所有元素添加
 	- `node.prepend(...nodes or strings)` —— 在 `node` 开头插入，
 	- `node.before(...nodes or strings)` —— 在 `node` 之前插入，
 	- `node.after(...nodes or strings)` —— 在 `node` 之后插入，
-	- `node.replaceWith(...nodes or strings)` —— 替换 `node`。
-	- `node.remove()` —— 移除 `node`。
+	- `node.replaceWith(...nodes or strings)` —— 替换 `node`以及其子孙元素。
+	- `node.remove()` —— 移除 `node`以及子孙元素。
+
+	~~~html
+	    <ol id="ol">
+	        <li>0</li>
+	    </ol>
+	    <script>
+	        ol.before(`before`, document.createElement('li'), 'hello');
+	    </script>
+	~~~
 
 	文本字符串被“作为文本”插入。
+
+	**所有插入方法都会自动从旧位置删除该节点。**
+
+	~~~html
+	<!--元素交换-->
+	<div id="first">First</div>
+	<div id="second">Second</div>
+	<script>
+	  // 无需调用 remove
+	  second.after(first); // 获取 #second，并在其后面插入 #first
+	</script>
+	
+	~~~
+
+	
+
+- 在 `html` 中给定一些 HTML，`elem.insertAdjacentHTML(where, html)` 会根据 `where` 的值来插入它：
+
+	- `"beforebegin"` —— 将 `html` 插入到 `elem` 前面，
+	- `"afterbegin"` —— 将 `html` 插入到 `elem` 的开头，
+	- `"beforeend"` —— 将 `html` 插入到 `elem` 的末尾，
+	- `"afterend"` —— 将 `html` 插入到 `elem` 后面。
+
+另外，还有类似的方法，`elem.insertAdjacentText(where, text)` 和 `elem.insertAdjacentElement(where, elem)`，它们会插入文本字符串和元素，但很少使用。
+
+~~~html
+<div id="div"></div>
+<script>
+  div.insertAdjacentHTML('beforebegin', '<p>Hello</p>');
+  div.insertAdjacentHTML('afterend', '<p>Bye</p>');
+</script>
+~~~
+
+
+
+![](figure/insertAdjacentElement.png)
+
+- 要在页面加载完成之前将 HTML 附加到页面：
+
+	- `document.write(html)`
+
+	页面加载完成后，这样的调用将会擦除文档。多见于旧脚本。因此，如果我们需要向 HTML 动态地添加大量文本，并且我们正处于页面加载阶段，并且速度很重要，那么它可能会有帮助。
 
 - 这里还有“旧式”的方法：
 
@@ -351,42 +405,321 @@ Element.prototype.sayHi = function() {};	//为所有元素添加
 
 	这些方法都返回 `node`。
 
-- 在 `html` 中给定一些 HTML，`elem.insertAdjacentHTML(where, html)` 会根据 `where` 的值来插入它：
-
-	- `"beforebegin"` —— 将 `html` 插入到 `elem` 前面，
-	- `"afterbegin"` —— 将 `html` 插入到 `elem` 的开头，
-	- `"beforeend"` —— 将 `html` 插入到 `elem` 的末尾，
-	- `"afterend"` —— 将 `html` 插入到 `elem` 后面。
-
-另外，还有类似的方法，`elem.insertAdjacentText` 和 `elem.insertAdjacentElement`，它们会插入文本字符串和元素，但很少使用。
-
-- 要在页面加载完成之前将 HTML 附加到页面：
-
-	- `document.write(html)`
-
-	页面加载完成后，这样的调用将会擦除文档。多见于旧脚本。
-
 
 
 ### 样式与类
 
+要管理 class，有两个 DOM 属性：
+
+- `className` —— 字符串值，可以很好地管理整个类的集合。
+
+- `classList` —— 具有 `add/remove/toggle/contains` 方法的对象，可以很好地支持单个类。`toggle `表示如果类不存在就添加类，存在就移除它。它是可迭代对象。
+
+	~~~JavaScript
+	//<body class="main page">
+	for (let name of document.body.classList) {
+	      alert(name); // main，然后是 page
+	}
+	~~~
+
+	
+
+要改变样式：
+
+- `elem.style` 属性是一个只读对象，它对应于 `"style"` 特性（attribute）中所写的内容。
+
+	
+
+	`elem.style.width="100px"`（**不能是数值，只能是字符串**） 的效果等价于我们在 `style` 特性中有一个 `width:100px` 字符串。这对应了一个特殊方法`elem.style.setProperty('width','100px')`
+
+	
+
+	如果`elem.style.display=""`，那么就应用浏览器的默认样式。这还对应了一个特殊方法` elem.style.removeProperty(' property')`。
+
+	
+
+	对于多词（multi-word）属性，使用驼峰式 camelCase：连字符 `-` 表示大写。
+
+	~~~text
+	background-color  => elem.style.backgroundColor
+	z-index           => elem.style.zIndex
+	border-left-width => elem.style.borderLeftWidth
+	-moz-border-radius => elem.style.MozBorderRadius
+	~~~
+
+	
+
+- 通常，我们使用 `style.*` 来对各个样式属性进行赋值。我们不能像这样的 `div.style="color: red; width: 100px"` 设置完整的属性，因为 `div.style` 是一个对象，并且它是只读的。想要以字符串的形式设置完整的样式，可以使用特殊属性 `style.cssText`：
+
+	~~~JavaScript
+	div.style.cssText=`color: red !important;
+	    background-color: yellow;
+	    width: 100px;
+	    text-align: center;
+	  `;
+	~~~
+
+	我们很少使用这个属性，因为这样的赋值会删除所有现有样式：它不是进行添加，而是替换它们。
+
+	
+
+要读取已解析的（resolved）样式（对于所有类，在应用所有 CSS 并计算最终值之后）：
+
+- **`style` 属性仅对 `"style"` 特性（attribute）值起作用，而没有任何 CSS 级联（cascade）**。`getComputedStyle(elem, [pseudo])` 返回与 `style` 对象类似的。但是可以解决上述问题。
+
+	~~~JavaScript
+	//body { color: red; margin: 5px }
+	let computedStyle = getComputedStyle(document.body);
+	// 现在我们可以读取它的 margin 和 color 了
+	//computedStyle.marginTop = "100px";	ERROR
+	alert( computedStyle.marginTop ); // 5px 对简写属性不起作用
+	alert( computedStyle.color ); // rgb(255, 0, 0)
+	~~~
+
+	
+
+	> 不论是style、还是getComputedStyle，它们无法读取到简写属性，只能用具体的属性marginTop来访问。
+	>
+	> 此外不要使用getComputedStyle来获取 width/height，下面有更好的方法！
+
 ### 元素大小和滚动
+
+元素具有以下几何属性：不考虑外边距
+
+- `offsetParent` —— 是最接近的 CSS 定位的BFC祖先，例如是 `td`，`th`，`table`，`body`。offsetParent的值可能为null
+
+- `offsetLeft/offsetTop` —— 是相对于 `offsetParent` 的左上角`x/y`坐标。
+
+- `offsetWidth/offsetHeight` —— 元素“外部”的 width/height，即边框 + 内边距 + 内容的尺寸大小。
+
+- `clientLeft/clientTop` ——可以近似认为是边框（border）的大小 。
+
+- `clientWidth/clientHeight` —— 内容 + 内边距的尺寸大小，但不包括滚动条（scrollbar）占用内容的空间。
+
+- `scrollWidth/scrollHeight` —— clientWidth + 滚动出（隐藏）的部分。但仍不包括滚动条。
+
+	~~~JavaScript
+	// 将元素展开（expand）到完整的内容高度
+	element.style.height = `${element.scrollHeight}px`;
+	~~~
+
+- `scrollLeft/scrollTop` 是元素的隐藏、滚动部分的 width/height。换句话说，`scrollTop` 就是“已经滚动了多少”。
+
+
+
+除了 `scrollLeft/scrollTop` 外，所有属性都是只读的。如果我们修改 `scrollLeft/scrollTop`，浏览器会滚动对应的元素。基于这一点，我们可以自定义滚动条，想想就挺激动的！
+
+![](figure/元素的集合属性.png)
+
+
+
+注意一些浏览器（并非全部）通过从width中获取空间来为滚动条保留空间，且还将滚动条放在边框外。
+
+![](figure/元素的布局.png)
 
 ### window大小和滚动
 
+几何：
+
+- 文档可见部分的 width/height（内容部分的 width/height）：`document.documentElement.clientWidth/clientHeight`
+
+- 整个文档的 width/height，其中包括滚动出去的部分：
+
+	```javascript
+	let scrollHeight = Math.max(
+	  document.body.scrollHeight, document.documentElement.scrollHeight,
+	  document.body.offsetHeight, document.documentElement.offsetHeight,
+	  document.body.clientHeight, document.documentElement.clientHeight
+	);
+	```
+	
+	​		为什么这样？最好不要问。这些不一致来源于远古时代，而不是“聪明”的逻辑。
+
+window.screen.width可以获取到当前显示器的分辨率
+
+
+
+虽然document.documentElement的scroll*属性可以处理滚动，但还是推荐使用window对象的滚动属性
+
+滚动：
+
+- 读取当前的滚动：`window.pageYOffset/pageXOffset`。
+- 更改当前的滚动：
+	- `window.scrollTo(pageX,pageY)` —— 根据绝对坐标进行滚动
+	- `window.scrollBy(x,y)` —— 相对当前位置进行滚动，
+	- `elem.scrollIntoView(top=true)` —— 滚动以使 `elem` 可见（`elem` 与窗口的顶部/底部对齐）。
+	- 要使文档不可滚动，只需要设置 `document.body.style.overflow = "hidden"`。该页面将“冻结”在其当前滚动位置上。
+
 ### 坐标
+
+页面上的任何点都有坐标：
+
+1. 相对于窗口的坐标 ：clientX/clientY
+2. 相对于文档的坐标 ： `pageX/pageY`
+
+![](figure/坐标.png)
+
+窗口坐标非常适合和 `position:fixed` 一起使用，文档坐标非常适合和 `position:absolute` 一起使用。
+
+
+
+方法 `elem.getBoundingClientRect()` 返回最小矩形的窗口坐标，该矩形将 `elem` 作为内建 [DOMRect](https://www.w3.org/TR/geometry-1/#domrect) 类的对象。
+
+主要的 `DOMRect` 属性：
+
+- `x/y` —— 矩形原点相对于窗口的 X/Y 坐标，
+- `width/height` —— 矩形的 width/height（可以为负）。
+
+此外，还有派生（derived）属性：
+
+- `top/bottom` —— 顶部/底部矩形边缘的 Y 坐标，
+- `left/right` —— 左/右矩形边缘的 X 坐标。
+
+![](figure/getBindingClientRect.png)
+
+
+
+`document.elementFromPoint(x, y)` 的调用会返回在窗口坐标 `(x, y)` 处嵌套最多（the most nested）的元素。它只对在可见区域内的坐标 `(x,y)` 起作用。
 
 ## 事件
 
 ### 事件概述
 
+这是最有用的 DOM 事件的列表，你可以浏览一下：
+
+**鼠标事件：**
+
+- `click` —— 当鼠标点击一个元素时（触摸屏设备会在点击时生成）。
+- `contextmenu` —— 当鼠标右键点击一个元素时。
+- `mouseover` / `mouseout` —— 当鼠标指针移入/离开一个元素时。
+- `mousedown` / `mouseup` —— 当在元素上按下/释放鼠标按钮时。
+- `mousemove` —— 当鼠标移动时。
+
+**键盘事件**：
+
+- `keydown` 和 `keyup` —— 当按下和松开一个按键时。
+
+**表单（form）元素事件**：
+
+- `submit` —— 当访问者提交了一个 `<form>` 时。
+- `focus` —— 当访问者聚焦于一个元素时，例如聚焦于一个 `<input>`。
+
+**Document 事件**：
+
+- `DOMContentLoaded` —— 当 HTML 的加载和处理均完成，DOM 被完全构建完成时。
+
+**CSS 事件**：
+
+- `transitionend` —— 当一个 CSS 动画完成时。
+
+
+
+这里有 3 种分配事件处理程序的方式：
+
+1. HTML 特性（attribute）：`onclick="..."`。HTML 特性很少使用，因为 HTML 标签中的 JavaScript 看起来有些奇怪且陌生。而且也不能在里面写太多代码。
+
+	~~~html
+	<input value="Click me" onclick="alert(`Click!`)" type="button">
+	<input type="button" onclick="countRabbits()" value="Count rabbits!">
+	~~~
+
+	
+
+2. DOM 属性（property）`on<event>`：`elem.onclick = function`。这个方法可以为特定事件**添加一个**事件处理程序。HTML特性就是基于DOM属性来实现的，例如
+
+	~~~javascript
+	<input type="button" id="button" onclick="sayThanks()">
+	//等价于
+	button.onclick = function() {
+	  sayThanks(); // <-- 特性（attribute）中的内容变到了这里
+	};    
+	~~~
+
+	
+
+3. 方法（method）：`elem.addEventListener(event, handler[, options])` 用于添加removeEventListener` 用于移除。这个方法可以为特定事件**添加多个**事件处理程序。
+
+	其中`options`是具有以下属性的附加可选对象：
+
+	- `once`：如果为 `true`，那么会在被触发后自动删除监听器。
+	- `capture`：事件处理的阶段。由于历史原因，`options` 也可以是 `false/true`，它与 `{capture: false/true}` 是等价的。
+	- `passive`：如果为 `true`，那么处理程序将不会调用 `preventDefault()`
+
+	`handler`既可以是`Function`，也可以是带有`handleEvent`方法的`Object`。
+
+	
+
+	推荐采取以下更加现代的方法给元素编写事件处理器：
+
+	~~~JavaScript
+	//事件集中在一块处理		
+	class Menu {
+		handleEvent(event) {
+			let method = 'on' + event.type[0].toUpperCase() + event.tpye.slice(1);
+			this[method](event);	//转发事件
+		}
+	
+		onMousedown() {
+			elem.innerHTML = "Mouse button pressed";
+		}
+		onMouseup() {
+			elem.innerHTML += "...and released.";
+		}
+	}
+	
+	let menu = new Menu();
+	elem.addEventListener('mousedown', menu);
+	elem.addEventListener('mouseup', menu);
+	~~~
+
+	现在事件处理程序已经明确地分离了出来，这样更容易进行代码编写和后续维护。
+
+	
+
+	有些事件无法通过 DOM 属性进行分配。只能使用 `addEventListener`。例如，`DOMContentLoaded` 事件
+
+
+
+一般来说函数之间的赋值会丢失this值，但是Javascript事件机制对this做了特殊处理，因此可以在事件处理器函数中使用this来访问产生事件的元素。
+
+
+
+当事件发生时，浏览器会创建一个 **`event` 对象**，将详细信息放入其中，并将其作为参数传递给处理程序。
+
+`event` 对象的一些属性：
+
+- `event.type`事件类型。
+- `event.currentTarget`处理事件的元素。这与 `this` 相同，除非处理程序是一个箭头函数，或者它的 `this` 被绑定到了其他东西上，之后我们就可以从 `event.currentTarget` 获取元素了。
+
+还有很多属性。其中很多都取决于事件类型，例如
+
+- `event.clientX / event.clientY`，指针事件（pointer event）的指针的窗口相对坐标。
+
+
+
+
+
 ### 冒泡和捕捉
+
+**当一个事件发生在一个元素上，它会首先运行在该元素上的处理程序，然后运行其父元素上的处理程序，然后一直向上到其他祖先上的处理程序。**
+
+![](figure/冒泡.png)
+
+> `focus` 事件不会冒泡。但这仍然是例外，而不是规则。
+
+
 
 ### 事件委托
 
+
+
 ### 默认行为
 
+
+
 ### 创建自定义事件
+
+
 
 ## UI事件
 
@@ -402,5 +735,5 @@ Element.prototype.sayHi = function() {};	//为所有元素添加
 
 ### 滚动
 
-## 
+
 

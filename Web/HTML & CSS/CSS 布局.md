@@ -367,7 +367,7 @@ place-items同时设置justify-items与align-items。
 
 
 
-**position:absolute**，绝对定位，它是相对于已定位元素（除position:static之外的）进行定位的。它的使用和固定定位是一样的，在这里不再介绍。
+**position:absolute**，绝对定位，它是相对于已定位元素（除position:static之外的）进行定位的。它的方向属性top、left等和固定定位是一样的，在这里不再介绍。
 
 
 

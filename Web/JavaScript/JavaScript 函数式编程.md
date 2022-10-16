@@ -26,46 +26,64 @@ Javascript函数的特点：
 
 
 
+此外，某些情况下this会丢失，例如：
+
+~~~JavaScript
+		let o = { fun() { alert(this); } };
+		let f = o.fun;
+		f();			//Global object
+		o.fun();		//Object object
+~~~
+
+可以通过函数的bind方法来解决这类问题。
+
 ## 函数调用
 
 Javascript可以通过以下五种方式调用函数
 
 - 作为函数
 
-	调用表达式包括求值为函数的函数表达式以及参数列表
+  调用表达式包括求值为函数的函数表达式以及参数列表
 
-	~~~JavaScript
-	printprops({x : 1});	 //普通调用
-	f?.(x);					//条件调用
-	~~~
+  ~~~JavaScript
+  printprops({x : 1});	 //普通调用
+  f?.(x);					//条件调用
+  ~~~
 
-	在非严格模式下的函数调用，this指向全局对象。在严格模式下，this是undefined。这种规则作用于任何嵌套函数
-
-	~~~JavaScript
-	let o {
-	    m : function() {
-	        this			//object o
-			function f() {
-				this	//global object
-	        }
-	    }
-	}
-	~~~
-
-	上述的例子被认为是Javascript设计上的严重缺陷，这可以通过箭头函数或者在外部函数中定义一个变量（通常命名为self）来保存this来修正这个问题。
+  在非严格模式下的函数调用，this指向全局对象。在严格模式下，this是undefined。这种规则作用于任何嵌套函数
 
 - 作为方法
 
-	如果函数表达式是属性访问表达式，那么该函数就作为方法来被调用。方法调用与函数调用有一个重要区别：调用上下文。方法调用的this是当前调用它的对象，函数体可以通过this引用这个对象。
+  如果函数表达式是属性访问表达式，那么该函数就作为方法来被调用。方法调用与函数调用有一个重要区别：调用上下文。方法调用的this是当前调用它的对象，函数体可以通过this引用这个对象。
 
-	如果方法返回this，那么就可以支持一种被称为方法调用链（method channing）的编程风格
+  如果方法返回this，那么就可以支持一种被称为方法调用链（method channing）的编程风格
 
-	~~~javascript
-	new Square().x(100).y(100).fill("blue").draw();
-	doStepOne().then(doStepTwo).then(doStepThree).catch(handleErrors)
-	~~~
+  ~~~javascript
+  new Square().x(100).y(100).fill("blue").draw();
+  doStepOne().then(doStepTwo).then(doStepThree).catch(handleErrors)
+  ~~~
 
-	
+  
+
+  ~~~JavaScript
+  let o = {
+      m : function g() {
+          alert(this);			//object o
+  		function f() {
+  			alert(this);	//global object
+          }
+          f();
+      }
+  }
+  ~~~
+
+  上述的例子被认为是Javascript设计上的严重缺陷，这可以通过箭头函数或者在外部函数中定义一个变量（通常命名为self）来保存this来修正这个问题，或者f().call(this, ...args)。
+
+  
+
+  
+
+  
 
 - 作为构造函数
 
@@ -84,9 +102,9 @@ Javascript可以通过以下五种方式调用函数
 
     
 
-- call、apply方法 
+- call、apply、bind方法 
 
-	因为每个JavaScript函数都是对象类型，所以函数也有方法。其中call、apply方法可以间接调用这个函数，下一节会介绍这些只是。
+	因为每个JavaScript函数都是对象类型，所以函数也有方法。其中call、apply方法可以间接调用这个函数，下一节会介绍这些知识。**使用这些函数的最主要目的就是修正this指针产生的BUG**。
 
 - Javascript隐式调用
 
@@ -95,8 +113,6 @@ Javascript可以通过以下五种方式调用函数
 
 
 ## 函数表达式以及箭头函数
-
-
 
 **在函数表达式中，可以省略函数名**，此时不可递归。下面给出例子：
 
@@ -130,8 +146,8 @@ const fun = x => {{value : x}};
 
 箭头函数有两个区别于普通函数的特性：
 
-- 从定义自己的环境中继承this关键字的值，而不是像一其他方式定义的函数那样定义自己的this
-- 没有prototype属性。这就意味着箭头函数不能作为构造函数。
+- **从定义自己的环境中继承this关键字的值**，而不是像一其他方式定义的函数那样定义自己的this
+- **没有prototype属性**。这就意味着箭头函数不能作为构造函数。
 
 
 
@@ -237,26 +253,25 @@ function sum(a) {
 }
 ~~~
 
+实参会依次复制给形参的，不能像数据那样，跳过对某一形参的赋值
 
-
-
+~~~javascript
+let arr = [1, 2, , , , 3];	//PASS
+f(1, 2, , , , 3)			//ERROR
+~~~
 
 
 
 如果实参个数少于形参个数，那么未赋值的形参将会得到默认值——undefined。
 
-
-
-JavaScript支持默认参数，对于默认参数的位置并没有要求。甚至默认参数可以是变量或者前面的形参。默认参数在调用时求值，而不是在编译时求值。
+JavaScript**支持默认参数**，对于默认参数的位置并没有要求。甚至默认参数可以是变量或者前面的形参。默认参数在调用时求值，而不是在编译时求值。
 
 ~~~javascript
 function fun(a = 10, b, c = 30) { }
 const rectangle = (width, height = width * 2) => ({width, height});
 ~~~
 
-
-
-剩余实参（rest parameter）用于接受多余的实参。剩余实参实质上就是一个数组，即使没有多余的实参，剩余实参也是个空数组而不是undefined。
+**剩余实参（rest parameter）**用于接受多余的实参。剩余实参实质上就是一个数组，即使没有多余的实参，剩余实参也是个空数组而不是undefined。
 
 ~~~javascript
 function max(first = -Infintiy, ...rest) {
@@ -270,7 +285,7 @@ function max(first = -Infintiy, ...rest) {
 
 
 
-此外还有arguments对象它包含全部的参数，他是一个类数组对象，但是不推荐使用，除非你要维护老项目。
+此外还有**arguments对象**它包含全部的参数，他是一个类数组对象，但是不推荐使用，除非你要维护老项目。
 
 ~~~javascript
 function f(a, b, c) {
@@ -405,7 +420,7 @@ let stddev = sqrt(product(reduce(map(data,
 
 函数是一种特殊的对象，因此它也有属性。
 
-为函数添加属性可以定义函数的静态变量。
+通过给函数添加属性来定义函数的静态变量。
 
 ~~~javascript
 unqueInteger.counter = 0;		//函数声明会提升，因此在这里定义函数的属性是没有问题的
@@ -415,13 +430,13 @@ function uniqueInteger() {
 }
 ~~~
 
-
-
 函数的length属性是只读属性，表示函数形参的个数，但不考虑剩余参数。
+
+
 
 除了箭头函数，所有函数都有一个prototype属性，这个属性引用函数的原型对象。因此箭头函数本身没有this、需要从外层对象中继承this值。
 
-call、apply方法将this调用上下文设置为第一个参数值，剩余的参数作为实参传递给被调用函数。值得注意的是，箭头函数本身没有this值，所以它会忽略掉第一个参数。
+`call`、`apply`方法将this调用上下文设置为第一个参数值，剩余的参数作为实参传递给被调用函数。值得注意的是，箭头函数本身没有this值，所以它会忽略掉第一个参数。
 
 ~~~javascript
 f.call(o);
@@ -437,7 +452,7 @@ f.apply(o, [1, 2, 3]);
 
 
 
-bind方法
+`bind`方法
 
 ~~~javascript
 function f(y) { return this.x + y; }
@@ -449,6 +464,8 @@ p.g1(2);			//3
 ~~~
 
 如果在函数f上调用bind方法，并且传入对象o，这个方法f会返回一个新的函数，这个新函数的this会永远绑定到对象o上，即使apply、call也改变不了。箭头函数是从定义他们的环境中继承this值，且这个值不能被bind覆盖，所以绑定并不起作用。不过，由于调用bind函数最常见的目的是让非箭头函数变得像箭头函数，因此这个限制通常也不是问题。
+
+
 
 此外bind的额外参数用于固定方法f的参数值，这可以实现柯里化（currying）
 
@@ -475,7 +492,7 @@ constrcutFunction()()	//global
 
 
 
-## 
+
 
 
 
