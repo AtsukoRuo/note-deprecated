@@ -85,9 +85,12 @@ git add Note/ 			#add目录
 `git commit`：
 
 - `--amend`：重新提交一次。避免修补小错误时而使提交记录混乱
+
 - `-m`：必须要有的，说明提交信息
+
 - `-a`：将工作区中所有已跟踪文件提交，相当于跳过git add。
-- `--pretty=oneline` or `--oneline`：精简输出
+
+	
 
 ![首次提交对象及其树结构。](assets/commit-and-tree-1673929285060-9.png)
 
@@ -110,6 +113,7 @@ $ git add README
 `git log`打印当前仓库的提交记录
 
 -  `--graph`打印当前分支到根节点的所有提交 。`--all`与`--graph`配合使用，以图的形式打印全部提交，不仅仅打印出当前分支到根节点的所有提交。
+-  `--pretty=oneline` or `--oneline`：精简输出
 
 
 
@@ -189,29 +193,62 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 
   	解决 Git 的合并冲突：在手动解决完冲突后，在手动解决完冲突后需要调用 `git commit`。
 
+- 更名分支
+
+  - `git branch -M <oldname> <newname>`，可省略`oldname`，就对当前分支更名。
+
 - 变基：将当前分支变基到指定分支上。![分叉的提交历史。](assets/basic-rebase-1.png)
 
-	它的原理是首先找到这两个分支（即当前分支 `experiment`、变基操作的目标基底分支 `master`）的最近共同祖先 `C2`，然后对比当前分支相对于该祖先的历次提交，提取相应的修改并存为临时文件，然后将当前分支指向目标基底 `C3`, 最后以此将之前另存为临时文件的修改依序应用。注意：此时`C4`提交会被删除。
+  它的原理是首先找到这两个分支（即当前分支 `experiment`、变基操作的目标基底分支 `master`）的最近共同祖先 `C2`，然后对比当前分支相对于该祖先的历次提交，提取相应的修改并存为临时文件，然后将当前分支指向目标基底 `C3`, 最后以此将之前另存为临时文件的修改依序应用。注意：此时`C4`提交会被删除。
 
-	![将 `C4` 中的修改变基到 `C3` 上。](assets/basic-rebase-3.png)
+  ![将 `C4` 中的修改变基到 `C3` 上。](assets/basic-rebase-3.png)
 
-	解决 Git 变基后的合并冲突：在手动解决完冲突后调用 `git rebase --continue`，以便 Git 继续处理变基的其余部分。
+  解决 Git 变基后的合并冲突：在手动解决完冲突后调用 `git rebase --continue`，以便 Git 继续处理变基的其余部分。
+
+  一个例子：
+
+  ![从一个主题分支里再分出一个主题分支的提交历史。](assets/interesting-rebase-1.png)
+
+  ![截取主题分支上的另一个主题分支，然后变基到其他分支。](assets/interesting-rebase-2.png)
+
+  ![将 `server` 中的修改变基到 `master` 上。](assets/interesting-rebase-4.png)
 
 - 优选分支
 
-	- `git cherry-pick <name>`：将指定分支所指向的版本复制到当前分支上。原理与`git rebase`类似
+  - `git cherry-pick <name>`：将指定分支所指向的版本复制到当前分支上。原理与`git rebase`类似
+
+  例子：
+
+  ~~~
+           Master
+  		   |
+  a - b - c - d 
+  	\ 
+  	  e - f - g
+  	  
+  git checkout master
+  git cherry-pick f
+  
+               Master
+                  |
+  a - b - c - d - f
+  	\ 
+  	  e - f - g
+  ~~~
+
+  出现冲突后，可使用`git cherry-pick --continue`或者`git cherry-pick --abort` 
 
 - 删除分支
 
-	- `git branch -d <name>`：删除指定分支。`-D`强制删除。
+  - `git branch -d <name>`：删除指定分支。`-D`强制删除。
 
 ## 远程仓库
 
 使用命令`git clone <url> `下载服务器的远程仓库到本地中。`git clone -o <name>`更改默认仓库名。
 
-> 术语区分：服务器的远程仓库与本地的远程仓库
+> 术语区分：服务器的远程仓库与本地的远程仓库。
 
-通过`git remote add <shortname> <url>`创建一个远程仓库。
+通过`git remote add <shortname> <url>`创建一个远程仓库。注意还没有该仓库的数据，必须通过`git fetch`来下载数据。
 
 `git remote`查看所有本地远程仓库的名称，`-v` 同时列出对应的URL以及权限。
 
@@ -223,11 +260,16 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 
 注意：本地上的各个仓库之间是隔离的，都拥有自己的对象（本地分支、文件数据等）。通过`git checkout`切换分支来切换到对应的仓库。而且**远程分支是不可修改**的，除非使用`git fetch`以及`git pull`命令与服务器远程仓库同步。
 
-
+~~~shell
+git checkout master				#切换回本地仓库
+git checkout origin/master		 #切换回本地的远程仓库
+~~~
 
 
 
 `git fetch <shortname>`从服务器下载数据到对应的本地远程仓库。而`git pull <shortname / url>` 从服务器中下载数据后直接进行合并。解决冲突：使用`git commit`命令。
+
+
 
 `git push <name> <branch>`将本地分支推送到服务器上。`git push <1> <2>:<2>`创建远程分支并同步到服务器上。这里`<1>`是远程仓库名，而`<2>`是本地分支名。`git push origin :<branch>` or `git push origin --delete <branch>`都可以删除掉远程分支并同步到服务器上。
 
@@ -242,6 +284,32 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 
 
 ## 问题汇编
+
+### 本地仓库与远程仓库合并
+
+情景：远程仓库已经建立，将本地代码上传至远程仓库。
+
+~~~shell
+git init
+git add .
+git commit -m "commit"
+git remote add origin
+git pull --rebase origin master        #远程仓库不为空必须做这一步
+git push -u origin master
+~~~
+
+
+
+### 合并两个远程仓库
+
+~~~shell
+git clone A
+git remote add B 
+git checkout A/master
+git merge B/master --allow-unrelated-histories	#这里--allow-unrelated-histories仅仅是提示作用
+~~~
+
+
 
 
 
