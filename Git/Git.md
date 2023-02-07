@@ -275,6 +275,39 @@ git checkout origin/master		 #切换回本地的远程仓库
 
 
 
+
+
+
+
+
+
+
+
+### 跟踪分支（上游分支）
+
+如果当前分支与远程分支之间存在追踪关系，那么
+
+~~~shell
+git push origin      #当前分支推送到服务器上
+git pull			#自动拉取
+~~~
+
+如何创建
+
+- `git checkout -b <branch> <remote>/<branch>`。创建一个跟踪分支
+
+- `git branch -u <remove>/<branch>`或者`git branch --set-upstream-to <remove>/<branch>`，令当前分支跟踪某个远程分支
+
+- 当克隆一个仓库时，它通常会自动地创建一个跟踪 `origin/defualt` 的 `defualt` 分支
+
+	
+
+
+
+查看所有跟踪分支
+
+- `git branch -vv`
+
 ## 工作模式
 
 
